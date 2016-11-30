@@ -25,12 +25,13 @@ Read:	mov eax,3	; Reading
 	
 	mov ebp,Buff
 	mov esi,eax	; Store in esi count of bytes from Input
-	mov ecx,esi	; Count is now in ecx
+	mov ecx,0	;HexLen Offset
 	mov edi,0	;Offset from the beginning
+	mov edx,0
 Proc:			;Processing
 	xor eax,eax
 	xor ebx,ebx
-	mov edx,0		;store position in 3-byte segment
+	inc ecx
 	;mov [bp+ecx+edx],20H	;first byte should be always 20h(Space)
 	;inc edx		;inrement position in 3-byte segment
 	
@@ -44,17 +45,25 @@ Proc:			;Processing
 	mov bl,byte [Digits+ebx]	;Get a real hex digit
 	
 	inc edx				;inrement position in 3-byte segment
-	mov byte [HexStr+edx],bl	;Write first hex half
+	mov byte [HexStr+ecx],bl	;Write first hex half
 	inc edx				;inrement position in 3-byte segment
-	mov byte [HexStr+edx],al	;Write second hex half
+	mov byte [HexStr+ecx+1],al	;Write second hex half
 	
-	cmp edx,HSLen			;Compare offset to HexStr length
-	jne Next
+	;mov edx,ecx
+	;shl ecx,1
+	inc ecx
+	inc ecx
+	
+	inc edi
+	
+	cmp ecx,HSLen
 	je Write
-Next:	mov ecx,esi
-	inc ecx
-	inc ecx
-	cmp edx,esi
+	jne Next
+	
+	;cmp edx,HSLen			;Compare offset to HexStr length
+	;jne Next
+	;je Write
+Next:	cmp edi,esi
 	jne Proc
 
 Write:			;Writing to output
@@ -63,6 +72,8 @@ Write:			;Writing to output
 	mov ecx,HexStr
 	mov edx,HSLen
 	int 80h
+	
+	jmp Read
 	
 Exit:	mov eax,1
 	mov ebx,0
